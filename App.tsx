@@ -49,6 +49,7 @@ import { QuranReaderModal } from './src/components/quran/QuranReaderModal';
 import { AsmaulHusnaModal } from './src/components/islamic/AsmaulHusnaModal';
 import { DailyDuaModal } from './src/components/islamic/DailyDuaModal';
 import { ZakatSedekahModal } from './src/components/islamic/ZakatSedekahModal';
+import { NeonSyncModal } from './src/components/profile/NeonSyncModal';
 import { useZakatSedekahStore } from './src/store/useZakatSedekahStore';
 
 // Icons
@@ -74,6 +75,7 @@ export default function App() {
   const [isDailyDuaOpen, setIsDailyDuaOpen] = useState(false);
   const [isZakatSedekahOpen, setIsZakatSedekahOpen] = useState(false);
   const [zakatModalTab, setZakatModalTab] = useState<'zakat' | 'sedekah'>('zakat');
+  const [isNeonSyncOpen, setIsNeonSyncOpen] = useState(false);
 
   // Stores
   const {
@@ -145,6 +147,7 @@ export default function App() {
                 <ProfileHeader
                   onOpenSettings={() => setIsEditProfileOpen(true)}
                   onOpenCalendarSync={() => setIsCalendarSyncOpen(true)}
+                  onOpenNeonSync={() => setIsNeonSyncOpen(true)}
                 />
 
                 {/* 2. 4 SMART METRIC CARDS (Focus Score, Tasks, Focus Time, Productivity) */}
@@ -313,6 +316,7 @@ export default function App() {
                   <ProfileHeader
                     onOpenSettings={() => setIsEditProfileOpen(true)}
                     onOpenCalendarSync={() => setIsCalendarSyncOpen(true)}
+                    onOpenNeonSync={() => setIsNeonSyncOpen(true)}
                   />
 
                   {/* 4 Metric Cards */}
@@ -566,6 +570,11 @@ export default function App() {
         visible={isZakatSedekahOpen}
         initialTab={zakatModalTab}
         onClose={() => setIsZakatSedekahOpen(false)}
+      />
+
+      <NeonSyncModal
+        visible={isNeonSyncOpen}
+        onClose={() => setIsNeonSyncOpen(false)}
       />
     </View>
   );

@@ -2,16 +2,17 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
 import { Colors } from '../../theme/colors';
 import { useAuthStore } from '../../store/useAuthStore';
-import { Cloud, Settings, LogOut, Zap } from 'lucide-react-native';
+import { Cloud, Settings, LogOut, Zap, Database } from 'lucide-react-native';
 import { soundHaptics } from '../../services/soundHaptics';
 import { IslamicCalendarService } from '../../services/islamicCalendarService';
 
 interface ProfileHeaderProps {
   onOpenSettings: () => void;
   onOpenCalendarSync?: () => void;
+  onOpenNeonSync?: () => void;
 }
 
-export const ProfileHeader: React.FC<ProfileHeaderProps> = ({ onOpenSettings }) => {
+export const ProfileHeader: React.FC<ProfileHeaderProps> = ({ onOpenSettings, onOpenNeonSync }) => {
   const { user } = useAuthStore();
   const [timeStr, setTimeStr] = useState('');
   const [dateStr, setDateStr] = useState('');
@@ -128,6 +129,18 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({ onOpenSettings }) 
         >
           <Cloud size={16} color={Colors.textSecondary} />
           <View style={styles.weatherDot} />
+        </TouchableOpacity>
+
+        {/* Neon Database Cloud Sync Button */}
+        <TouchableOpacity
+          activeOpacity={0.7}
+          onPress={() => {
+            soundHaptics.lightTap();
+            onOpenNeonSync?.();
+          }}
+          style={[styles.actionBtn, { borderColor: 'rgba(0, 255, 102, 0.3)', backgroundColor: 'rgba(0, 255, 102, 0.08)' }]}
+        >
+          <Database size={16} color="#00FF66" />
         </TouchableOpacity>
 
         {/* Settings / Edit Profile Button */}

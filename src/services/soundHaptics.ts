@@ -95,6 +95,17 @@ class SoundHapticsService {
     }
   }
 
+  // Warning vibration feedback
+  warning() {
+    if (Platform.OS === 'web') {
+      if (typeof navigator !== 'undefined' && navigator.vibrate) {
+        navigator.vibrate([60, 40, 60]);
+      }
+    } else {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning).catch(() => {});
+    }
+  }
+
   // Success milestone reached (Dhikr 33/100 completed, Habit done)
   celebrate() {
     if (Platform.OS === 'web') {

@@ -91,6 +91,23 @@ module.exports = async function handler(req, res) {
       );
     `;
 
+    // Auto-migration: Ensure missing columns exist
+    try {
+      await sql`ALTER TABLE habits ADD COLUMN IF NOT EXISTS icon_name VARCHAR(100);`;
+      await sql`ALTER TABLE habits ADD COLUMN IF NOT EXISTS target_frequency INTEGER DEFAULT 1;`;
+      await sql`ALTER TABLE habits ADD COLUMN IF NOT EXISTS points INTEGER DEFAULT 10;`;
+      await sql`ALTER TABLE habits ADD COLUMN IF NOT EXISTS period VARCHAR(50) DEFAULT 'daily';`;
+      await sql`ALTER TABLE habits ADD COLUMN IF NOT EXISTS category VARCHAR(50) DEFAULT 'ibadah';`;
+      await sql`ALTER TABLE habit_completions ADD COLUMN IF NOT EXISTS user_id VARCHAR(255);`;
+      await sql`ALTER TABLE smart_memos ADD COLUMN IF NOT EXISTS milestones JSONB DEFAULT '[]'::jsonb;`;
+      await sql`ALTER TABLE smart_memos ADD COLUMN IF NOT EXISTS bonus_points INTEGER DEFAULT 0;`;
+      await sql`ALTER TABLE quran_progress ADD COLUMN IF NOT EXISTS daily_page_target INTEGER DEFAULT 20;`;
+      await sql`ALTER TABLE quran_progress ADD COLUMN IF NOT EXISTS target_khatam_days INTEGER DEFAULT 30;`;
+      await sql`ALTER TABLE sedekah_records ADD COLUMN IF NOT EXISTS note TEXT;`;
+    } catch (migErr) {
+      console.warn('Auto-migration notice:', migErr);
+    }
+
     return res.status(200).json({
       success: true,
       status: 'CONNECTED',

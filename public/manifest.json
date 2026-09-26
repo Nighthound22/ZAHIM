@@ -1,0 +1,31 @@
+{
+  "name": "ZAHIM (Zad Al-Himmah)",
+  "short_name": "ZAHIM",
+  "description": "Aplikasi Pelacak Kebiasaan & Kedisiplinan Muslim Berbasis Himmah",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#0B0D11",
+  "theme_color": "#00FF66",
+  "categories": ["lifestyle", "productivity", "utilities"],
+  "icons": [
+    {
+      "src": "/assets/icon.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/assets/icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/assets/favicon.png",
+      "sizes": "48x48",
+      "type": "image/png"
+    }
+  ]
+}

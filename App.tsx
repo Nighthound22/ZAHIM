@@ -52,6 +52,7 @@ import { AsmaulHusnaModal } from './src/components/islamic/AsmaulHusnaModal';
 import { DailyDuaModal } from './src/components/islamic/DailyDuaModal';
 import { ZakatSedekahModal } from './src/components/islamic/ZakatSedekahModal';
 import { NeonSyncModal } from './src/components/profile/NeonSyncModal';
+import { InstallAppModal } from './src/components/install/InstallAppModal';
 import { useZakatSedekahStore } from './src/store/useZakatSedekahStore';
 
 // Icons
@@ -67,6 +68,7 @@ export default function App() {
   const [isDhikrOpen, setIsDhikrOpen] = useState(false);
   const [isCalendarSyncOpen, setIsCalendarSyncOpen] = useState(false);
   const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
+  const [isInstallOpen, setIsInstallOpen] = useState(false);
   const [isFastingModalOpen, setIsFastingModalOpen] = useState(false);
   const [fastingModalTab, setFastingModalTab] = useState<'niat' | 'jadwal'>('niat');
   const [isQiblaOpen, setIsQiblaOpen] = useState(false);
@@ -161,6 +163,7 @@ export default function App() {
         onOpenCalendarSync={() => setIsCalendarSyncOpen(true)}
         onOpenDhikr={() => setIsDhikrOpen(true)}
         onOpenSettings={() => setIsEditProfileOpen(true)}
+        onOpenInstall={() => setIsInstallOpen(true)}
       >
         {(isDesktop) => {
           if (isDesktop) {
@@ -172,6 +175,7 @@ export default function App() {
                   onOpenSettings={() => setIsEditProfileOpen(true)}
                   onOpenCalendarSync={() => setIsCalendarSyncOpen(true)}
                   onOpenNeonSync={() => setIsNeonSyncOpen(true)}
+                  onOpenInstall={() => setIsInstallOpen(true)}
                 />
 
                 {/* 2. 4 SMART METRIC CARDS (Focus Score, Tasks, Focus Time, Productivity) */}
@@ -341,6 +345,7 @@ export default function App() {
                     onOpenSettings={() => setIsEditProfileOpen(true)}
                     onOpenCalendarSync={() => setIsCalendarSyncOpen(true)}
                     onOpenNeonSync={() => setIsNeonSyncOpen(true)}
+                    onOpenInstall={() => setIsInstallOpen(true)}
                   />
 
                   {/* 4 Metric Cards */}
@@ -551,6 +556,7 @@ export default function App() {
       <EditProfileModal
         visible={isEditProfileOpen}
         onClose={() => setIsEditProfileOpen(false)}
+        onOpenInstall={() => setIsInstallOpen(true)}
       />
 
       <FastingDetailModal
@@ -599,6 +605,11 @@ export default function App() {
       <NeonSyncModal
         visible={isNeonSyncOpen}
         onClose={() => setIsNeonSyncOpen(false)}
+      />
+
+      <InstallAppModal
+        visible={isInstallOpen}
+        onClose={() => setIsInstallOpen(false)}
       />
     </View>
   );

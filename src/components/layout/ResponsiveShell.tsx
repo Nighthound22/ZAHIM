@@ -11,6 +11,7 @@ interface ResponsiveShellProps {
   onOpenCalendarSync: () => void;
   onOpenDhikr: () => void;
   onOpenSettings?: () => void;
+  onOpenInstall?: () => void;
   children: (isDesktop: boolean) => React.ReactNode;
 }
 
@@ -20,6 +21,7 @@ export const ResponsiveShell: React.FC<ResponsiveShellProps> = ({
   onOpenCalendarSync,
   onOpenDhikr,
   onOpenSettings,
+  onOpenInstall,
   children,
 }) => {
   const { width } = useWindowDimensions();
@@ -35,6 +37,7 @@ export const ResponsiveShell: React.FC<ResponsiveShellProps> = ({
         onOpenCalendarSync={onOpenCalendarSync}
         onOpenDhikr={onOpenDhikr}
         onOpenSettings={onOpenSettings}
+        onOpenInstall={onOpenInstall}
         isMobileSimulator={isMobileSimulator}
         onToggleSimulator={() => setIsMobileSimulator(!isMobileSimulator)}
         isLargeScreen={isLargeScreen}

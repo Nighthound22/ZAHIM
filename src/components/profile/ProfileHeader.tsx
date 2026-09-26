@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
 import { Colors } from '../../theme/colors';
 import { useAuthStore } from '../../store/useAuthStore';
-import { Cloud, Settings, LogOut, Zap, Database } from 'lucide-react-native';
+import { Cloud, Settings, LogOut, Zap, Database, Download } from 'lucide-react-native';
 import { soundHaptics } from '../../services/soundHaptics';
 import { IslamicCalendarService } from '../../services/islamicCalendarService';
 
@@ -10,9 +10,14 @@ interface ProfileHeaderProps {
   onOpenSettings: () => void;
   onOpenCalendarSync?: () => void;
   onOpenNeonSync?: () => void;
+  onOpenInstall?: () => void;
 }
 
-export const ProfileHeader: React.FC<ProfileHeaderProps> = ({ onOpenSettings, onOpenNeonSync }) => {
+export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
+  onOpenSettings,
+  onOpenNeonSync,
+  onOpenInstall,
+}) => {
   const { user } = useAuthStore();
   const [timeStr, setTimeStr] = useState('');
   const [dateStr, setDateStr] = useState('');
@@ -134,6 +139,22 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({ onOpenSettings, on
 
         {/* Action Buttons Group */}
         <View style={styles.actionButtonsGroup}>
+          {/* Download & Install App Button */}
+          <TouchableOpacity
+            activeOpacity={0.7}
+            onPress={() => {
+              soundHaptics.lightTap();
+              onOpenInstall?.();
+            }}
+            style={[
+              styles.actionBtn,
+              { borderColor: 'rgba(0, 255, 102, 0.4)', backgroundColor: 'rgba(0, 255, 102, 0.12)' },
+            ]}
+            accessibilityLabel="Download & Install Aplikasi"
+          >
+            <Download size={15} color="#00FF66" />
+          </TouchableOpacity>
+
           {/* Neon Database Cloud Sync Button */}
           <TouchableOpacity
             activeOpacity={0.7}

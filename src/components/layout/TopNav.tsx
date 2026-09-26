@@ -3,12 +3,13 @@ import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import { Colors } from '../../theme/colors';
 import { useAuthStore } from '../../store/useAuthStore';
 import { soundHaptics } from '../../services/soundHaptics';
-import { Calendar, Moon, Smartphone, Monitor, Volume2, VolumeX } from 'lucide-react-native';
+import { Calendar, Moon, Smartphone, Monitor, Volume2, VolumeX, Download } from 'lucide-react-native';
 
 interface TopNavProps {
   onOpenCalendarSync: () => void;
   onOpenDhikr: () => void;
   onOpenSettings?: () => void;
+  onOpenInstall?: () => void;
   isMobileSimulator: boolean;
   onToggleSimulator: () => void;
   isLargeScreen: boolean;
@@ -18,6 +19,7 @@ export const TopNav: React.FC<TopNavProps> = ({
   onOpenCalendarSync,
   onOpenDhikr,
   onOpenSettings,
+  onOpenInstall,
   isMobileSimulator,
   onToggleSimulator,
   isLargeScreen,
@@ -84,6 +86,28 @@ export const TopNav: React.FC<TopNavProps> = ({
             </Text>
           </TouchableOpacity>
         )}
+
+        {/* Download & Install App Button */}
+        <TouchableOpacity
+          activeOpacity={0.7}
+          onPress={() => {
+            soundHaptics.lightTap();
+            onOpenInstall?.();
+          }}
+          style={[
+            styles.actionBtn,
+            !isLargeScreen && styles.actionBtnCompact,
+            { borderColor: 'rgba(0, 255, 102, 0.4)', backgroundColor: 'rgba(0, 255, 102, 0.1)' },
+          ]}
+          accessibilityLabel="Download & Install Aplikasi"
+        >
+          <Download size={15} color="#00FF66" />
+          {isLargeScreen && (
+            <Text style={[styles.actionBtnText, { color: '#00FF66', fontWeight: '800' }]}>
+              Install App
+            </Text>
+          )}
+        </TouchableOpacity>
 
         {/* Global Sound Mute / Unmute Button */}
         <TouchableOpacity

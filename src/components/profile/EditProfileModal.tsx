@@ -13,12 +13,13 @@ import {
 import { Colors } from '../../theme/colors';
 import { useAuthStore } from '../../store/useAuthStore';
 import { NeonButton } from '../ui/NeonButton';
-import { X, User, Camera, Check, Volume2, VolumeX, Upload, LogOut, Sparkles } from 'lucide-react-native';
+import { X, User, Camera, Check, Volume2, VolumeX, Upload, LogOut, Sparkles, Download, ExternalLink } from 'lucide-react-native';
 import { soundHaptics } from '../../services/soundHaptics';
 
 interface EditProfileModalProps {
   visible: boolean;
   onClose: () => void;
+  onOpenInstall?: () => void;
 }
 
 const AVATAR_PRESETS = [
@@ -54,7 +55,7 @@ const AVATAR_PRESETS = [
   },
 ];
 
-export const EditProfileModal: React.FC<EditProfileModalProps> = ({ visible, onClose }) => {
+export const EditProfileModal: React.FC<EditProfileModalProps> = ({ visible, onClose, onOpenInstall }) => {
   const { user, updateProfile, logout } = useAuthStore();
   const [name, setName] = useState(user?.displayName || 'Ahmad Ali');
   const [photoURL, setPhotoURL] = useState(
@@ -290,6 +291,26 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ visible, onC
                   {!isMuted ? 'AKTIF' : 'SENYAP'}
                 </Text>
               </View>
+            </TouchableOpacity>
+
+            {/* Install App on Device Option */}
+            <TouchableOpacity
+              activeOpacity={0.8}
+              onPress={() => {
+                soundHaptics.lightTap();
+                onClose();
+                onOpenInstall?.();
+              }}
+              style={styles.soundToggleBox}
+            >
+              <View style={styles.soundLeft}>
+                <Download size={18} color="#00FF66" />
+                <View>
+                  <Text style={styles.soundTitle}>Download & Install ZAHIM</Text>
+                  <Text style={styles.soundSub}>Pasang di Layar Utama HP / Desktop Laptop</Text>
+                </View>
+              </View>
+              <ExternalLink size={16} color="#00FF66" />
             </TouchableOpacity>
 
             {/* Logout Account Button */}

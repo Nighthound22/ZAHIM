@@ -28,7 +28,16 @@
     },
     "web": {
       "favicon": "./assets/favicon.png",
-      "bundler": "metro"
+      "bundler": "metro",
+      "shortName": "ZAHIM",
+      "name": "ZAHIM (Zad Al-Himmah)",
+      "description": "Aplikasi Pelacak Kebiasaan & Kedisiplinan Muslim Berbasis Himmah",
+      "backgroundColor": "#0B0D11",
+      "themeColor": "#00FF66",
+      "display": "standalone",
+      "orientation": "portrait",
+      "scope": "/",
+      "startUrl": "/"
     }
   }
 }

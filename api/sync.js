@@ -6,8 +6,11 @@ async function ensureTables(sql) {
     CREATE TABLE IF NOT EXISTS users (
       id VARCHAR(255) PRIMARY KEY,
       name VARCHAR(255) NOT NULL,
-      avatar VARCHAR(255),
+      avatar TEXT,
       bio TEXT,
+      email VARCHAR(255),
+      phone VARCHAR(50),
+      city VARCHAR(100),
       created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
       updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
     );
@@ -74,6 +77,10 @@ async function ensureTables(sql) {
 
   // Auto-migration: Ensure missing columns are added if tables already existed
   try {
+    await sql`ALTER TABLE users ALTER COLUMN avatar TYPE TEXT;`;
+    await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS email VARCHAR(255);`;
+    await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS phone VARCHAR(50);`;
+    await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS city VARCHAR(100);`;
     await sql`ALTER TABLE habits ADD COLUMN IF NOT EXISTS icon_name VARCHAR(100);`;
     await sql`ALTER TABLE habits ADD COLUMN IF NOT EXISTS target_frequency INTEGER DEFAULT 1;`;
     await sql`ALTER TABLE habits ADD COLUMN IF NOT EXISTS points INTEGER DEFAULT 10;`;
@@ -151,7 +158,7 @@ module.exports = async function handler(req, res) {
     if (req.method === 'POST') {
       const body = req.body || {};
       const userId = body.userId || 'default_user';
-      const profile = body.profile || { name: 'Mukmin Mujahid', avatar: '🕌', bio: 'Menjaga Himmah & Istiqomah' };
+      const profile = body.profile || { name: 'Mukmin Mujahid', avatar: '', bio: 'Menjaga Himmah & Istiqomah' };
       const habits = Array.isArray(body.habits) ? body.habits : [];
       const completions = Array.isArray(body.completions) ? body.completions : [];
       const memos = Array.isArray(body.memos) ? body.memos : [];
@@ -160,12 +167,24 @@ module.exports = async function handler(req, res) {
 
       // 1. Upsert User Profile
       await sql`
-        INSERT INTO users (id, name, avatar, bio, updated_at)
-        VALUES (${userId}, ${profile.name || 'Hamba Allah'}, ${profile.avatar || '🕌'}, ${profile.bio || ''}, NOW())
+        INSERT INTO users (id, name, avatar, bio, email, phone, city, updated_at)
+        VALUES (
+          ${userId},
+          ${profile.name || 'Hamba Allah'},
+          ${profile.avatar || ''},
+          ${profile.bio || ''},
+          ${profile.email || ''},
+          ${profile.phone || ''},
+          ${profile.city || ''},
+          NOW()
+        )
         ON CONFLICT (id) DO UPDATE
         SET name = EXCLUDED.name,
-            avatar = EXCLUDED.avatar,
+            avatar = CASE WHEN EXCLUDED.avatar != '' THEN EXCLUDED.avatar ELSE users.avatar END,
             bio = EXCLUDED.bio,
+            email = CASE WHEN EXCLUDED.email != '' THEN EXCLUDED.email ELSE users.email END,
+            phone = CASE WHEN EXCLUDED.phone != '' THEN EXCLUDED.phone ELSE users.phone END,
+            city = CASE WHEN EXCLUDED.city != '' THEN EXCLUDED.city ELSE users.city END,
             updated_at = NOW();
       `;
 

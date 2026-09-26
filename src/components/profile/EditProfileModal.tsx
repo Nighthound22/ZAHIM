@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Modal,
   View,
@@ -62,6 +62,16 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ visible, onC
   );
   const [city, setCity] = useState(user?.location?.city || 'DKI Jakarta');
   const [isMuted, setIsMuted] = useState(soundHaptics.getIsMuted());
+  const [isSaving, setIsSaving] = useState(false);
+
+  useEffect(() => {
+    if (visible && user) {
+      setName(user.displayName || 'Ahmad Ali');
+      setPhotoURL(user.photoURL || AVATAR_PRESETS[0].url);
+      setCity(user.location?.city || 'DKI Jakarta');
+      setIsMuted(soundHaptics.getIsMuted());
+    }
+  }, [visible, user]);
 
   const handleUploadPhoto = () => {
     soundHaptics.lightTap();
@@ -106,17 +116,22 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ visible, onC
     setIsMuted(next);
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     soundHaptics.celebrate();
-    updateProfile({
-      displayName: name.trim() || 'Ahmad Ali',
-      photoURL: photoURL.trim(),
-      location: {
-        ...(user?.location || { latitude: -6.2088, longitude: 106.8456 }),
-        city: city.trim() || 'DKI Jakarta',
-      },
-    });
-    onClose();
+    setIsSaving(true);
+    try {
+      await updateProfile({
+        displayName: name.trim() || 'Ahmad Ali',
+        photoURL: photoURL.trim(),
+        location: {
+          ...(user?.location || { latitude: -6.2088, longitude: 106.8456 }),
+          city: city.trim() || 'DKI Jakarta',
+        },
+      });
+    } finally {
+      setIsSaving(false);
+      onClose();
+    }
   };
 
   const handleLogout = async () => {
@@ -298,7 +313,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ visible, onC
               style={{ flex: 1, marginRight: 8 }}
             />
             <NeonButton
-              title="Simpan Perubahan"
+              title={isSaving ? 'Menyimpan...' : 'Simpan Perubahan'}
               variant="primary"
               size="md"
               onPress={handleSave}

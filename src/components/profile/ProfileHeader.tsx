@@ -73,8 +73,12 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({ onOpenSettings, on
     <View style={styles.container}>
       {/* Top Profile Info Row */}
       <View style={styles.topInfoRow}>
-        {/* Avatar with active green dot */}
-        <View style={styles.avatarContainer}>
+        {/* Avatar with active green dot (clickable to edit) */}
+        <TouchableOpacity
+          activeOpacity={0.8}
+          onPress={onOpenSettings}
+          style={styles.avatarContainer}
+        >
           <Image
             source={{
               uri:
@@ -84,7 +88,7 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({ onOpenSettings, on
             style={styles.avatarImage}
           />
           <View style={styles.activeDot} />
-        </View>
+        </TouchableOpacity>
 
         {/* Greetings and Date */}
         <View style={styles.textContainer}>

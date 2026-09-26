@@ -4,13 +4,13 @@ import { useHabitStore } from '../store/useHabitStore';
 import { useMemoStore } from '../store/useMemoStore';
 import { useQuranDhikrStore } from '../store/useQuranDhikrStore';
 import { useZakatSedekahStore } from '../store/useZakatSedekahStore';
-import { HabitLog } from '../types';
+import { Habit, HabitLog, UserProfile } from '../types';
 
 const STORAGE_SYNC_URL_KEY = '@zahim_custom_sync_url_v1';
 const STORAGE_LAST_SYNC_KEY = '@zahim_last_synced_at_v1';
 
 // Default Vercel production domain for ZAHIM
-const DEFAULT_VERCEL_URL = 'https://zahim-nighthound22.vercel.app';
+const DEFAULT_VERCEL_URL = 'https://zahim.vercel.app';
 
 export interface SyncHealthResponse {
   success: boolean;
@@ -116,8 +116,11 @@ class NeonSyncService {
         userId,
         profile: {
           name: authState.user?.displayName || 'Mukmin Mujahid',
-          avatar: '🕌',
+          avatar: authState.user?.photoURL || '',
           bio: 'Menjaga Himmah & Disiplin Ibadah',
+          email: authState.user?.email || '',
+          phone: authState.user?.phone || '',
+          city: authState.user?.location?.city || 'DKI Jakarta',
         },
         habits: habitState.habits.map((h) => ({
           id: h.id,
@@ -126,7 +129,7 @@ class NeonSyncService {
           period: h.frequency || 'daily',
           targetFrequency: 1,
           points: (h.weight || 1) * 10,
-          iconName: h.category || 'Check',
+          iconName: h.timeSlot || '05:00',
         })),
         completions: completionsList,
         memos: memoState.memos.map((m) => ({
@@ -213,15 +216,37 @@ class NeonSyncService {
 
       const { user, habits, habitCompletions, memos, quranProgress } = result.data;
 
-      // 1. Restore Profile
+      // 1. Restore Profile (termasuk photoURL / avatar!)
       if (user) {
-        await useAuthStore.getState().updateProfile({
-          displayName: user.name,
-        });
+        const updateData: Partial<UserProfile> = {
+          displayName: user.name || authState.user?.displayName,
+        };
+        if (user.avatar && user.avatar.trim() !== '') {
+          updateData.photoURL = user.avatar;
+        }
+        if (user.email) updateData.email = user.email;
+        if (user.phone) updateData.phone = user.phone;
+        if (user.city) {
+          updateData.location = {
+            ...(authState.user?.location || { latitude: -6.2088, longitude: 106.8456 }),
+            city: user.city,
+          };
+        }
+        await useAuthStore.getState().updateProfile(updateData);
       }
 
       // 2. Restore Habits & Completions
       if (habits && habits.length > 0) {
+        const restoredHabits: Habit[] = habits.map((h: any) => ({
+          id: h.id,
+          title: h.title,
+          category: (h.category as any) || 'ibadah',
+          timeSlot: h.icon_name || '05:00',
+          weight: (Math.max(1, Math.min(3, Math.round((h.points || 10) / 10))) || 1) as 1 | 2 | 3,
+          frequency: (h.period as any) || 'daily',
+          createdAt: h.created_at || new Date().toISOString(),
+        }));
+
         const restoredLogs: Record<string, HabitLog> = {};
         if (habitCompletions && habitCompletions.length > 0) {
           habitCompletions.forEach((c: any) => {
@@ -236,7 +261,7 @@ class NeonSyncService {
         }
 
         // Persist restored habits to AsyncStorage
-        await AsyncStorage.setItem('@zahim_habits_v2', JSON.stringify(habits));
+        await AsyncStorage.setItem('@zahim_habits_v2', JSON.stringify(restoredHabits));
         await AsyncStorage.setItem('@zahim_logs_v2', JSON.stringify(restoredLogs));
         await useHabitStore.getState().loadStoredData();
       }
@@ -280,6 +305,25 @@ class NeonSyncService {
         error: error.message,
       };
     }
+  }
+
+  private autoSyncTimer: any = null;
+
+  /**
+   * Automatically debounced sync to Neon Cloud when data changes locally
+   */
+  triggerAutoSync(delayMs = 1200) {
+    if (this.autoSyncTimer) {
+      clearTimeout(this.autoSyncTimer);
+    }
+    this.autoSyncTimer = setTimeout(() => {
+      const auth = useAuthStore.getState();
+      if (auth.isAuthenticated) {
+        this.uploadToCloud().catch((err) => {
+          console.log('Background AutoSync notice:', err?.message || err);
+        });
+      }
+    }, delayMs);
   }
 
   /**

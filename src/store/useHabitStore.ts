@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Habit, HabitLog } from '../types';
 import { PRESET_HABITS } from '../data/presetHabits';
+import { neonSyncService } from '../services/neonSyncService';
 
 export interface WeekDayInfo {
   dayName: string;
@@ -175,12 +176,14 @@ export const useHabitStore = create<HabitState>((set, get) => ({
     const updated = [...get().habits, habit];
     set({ habits: updated });
     await AsyncStorage.setItem(STORAGE_HABITS_KEY, JSON.stringify(updated));
+    neonSyncService.triggerAutoSync();
   },
 
   deleteHabit: async (id) => {
     const updated = get().habits.filter((h) => h.id !== id);
     set({ habits: updated });
     await AsyncStorage.setItem(STORAGE_HABITS_KEY, JSON.stringify(updated));
+    neonSyncService.triggerAutoSync();
   },
 
   toggleHabit: async (habitId, customDate) => {
@@ -199,6 +202,7 @@ export const useHabitStore = create<HabitState>((set, get) => ({
 
     set({ logs: currentLogs });
     await AsyncStorage.setItem(STORAGE_LOGS_KEY, JSON.stringify(currentLogs));
+    neonSyncService.triggerAutoSync();
   },
 
   getDailyScore: (dateStr, bonusXP = 0) => {

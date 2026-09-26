@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { SpiritualProgress } from '../types';
+import { neonSyncService } from '../services/neonSyncService';
 
 interface QuranDhikrState {
   progress: SpiritualProgress;
@@ -69,6 +70,7 @@ export const useQuranDhikrStore = create<QuranDhikrState>((set, get) => ({
     };
     set({ progress: updated });
     await AsyncStorage.setItem(STORAGE_SPIRITUAL_KEY, JSON.stringify(updated));
+    neonSyncService.triggerAutoSync();
   },
 
   setTargetDaysForKhatam: async (days) => {
@@ -78,6 +80,7 @@ export const useQuranDhikrStore = create<QuranDhikrState>((set, get) => ({
     };
     set({ progress: updated });
     await AsyncStorage.setItem(STORAGE_SPIRITUAL_KEY, JSON.stringify(updated));
+    neonSyncService.triggerAutoSync();
   },
 
   toggleDhikrCompleted: async (period) => {
@@ -89,6 +92,7 @@ export const useQuranDhikrStore = create<QuranDhikrState>((set, get) => ({
     };
     set({ progress: updated });
     await AsyncStorage.setItem(STORAGE_SPIRITUAL_KEY, JSON.stringify(updated));
+    neonSyncService.triggerAutoSync();
   },
 
   incrementDhikrCount: (dhikrId, maxCount) => {

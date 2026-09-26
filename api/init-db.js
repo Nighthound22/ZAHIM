@@ -25,8 +25,11 @@ module.exports = async function handler(req, res) {
       CREATE TABLE IF NOT EXISTS users (
         id VARCHAR(255) PRIMARY KEY,
         name VARCHAR(255) NOT NULL,
-        avatar VARCHAR(255),
+        avatar TEXT,
         bio TEXT,
+        email VARCHAR(255),
+        phone VARCHAR(50),
+        city VARCHAR(100),
         created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
       );
@@ -93,6 +96,10 @@ module.exports = async function handler(req, res) {
 
     // Auto-migration: Ensure missing columns exist
     try {
+      await sql`ALTER TABLE users ALTER COLUMN avatar TYPE TEXT;`;
+      await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS email VARCHAR(255);`;
+      await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS phone VARCHAR(50);`;
+      await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS city VARCHAR(100);`;
       await sql`ALTER TABLE habits ADD COLUMN IF NOT EXISTS icon_name VARCHAR(100);`;
       await sql`ALTER TABLE habits ADD COLUMN IF NOT EXISTS target_frequency INTEGER DEFAULT 1;`;
       await sql`ALTER TABLE habits ADD COLUMN IF NOT EXISTS points INTEGER DEFAULT 10;`;

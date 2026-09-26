@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { SmartMemo, Milestone } from '../types';
+import { neonSyncService } from '../services/neonSyncService';
 
 interface MemoState {
   memos: SmartMemo[];
@@ -86,6 +87,7 @@ export const useMemoStore = create<MemoState>((set, get) => ({
     const updated = [newMemo, ...get().memos];
     set({ memos: updated });
     await AsyncStorage.setItem(STORAGE_MEMOS_KEY, JSON.stringify(updated));
+    neonSyncService.triggerAutoSync();
   },
 
   toggleMilestone: async (memoId, milestoneId) => {
@@ -100,18 +102,21 @@ export const useMemoStore = create<MemoState>((set, get) => ({
 
     set({ memos });
     await AsyncStorage.setItem(STORAGE_MEMOS_KEY, JSON.stringify(memos));
+    neonSyncService.triggerAutoSync();
   },
 
   deleteMemo: async (memoId) => {
     const updated = get().memos.filter((m) => m.id !== memoId);
     set({ memos: updated });
     await AsyncStorage.setItem(STORAGE_MEMOS_KEY, JSON.stringify(updated));
+    neonSyncService.triggerAutoSync();
   },
 
   archiveMemo: async (memoId) => {
     const memos = get().memos.map((m) => (m.id === memoId ? { ...m, isArchived: !m.isArchived } : m));
     set({ memos });
     await AsyncStorage.setItem(STORAGE_MEMOS_KEY, JSON.stringify(memos));
+    neonSyncService.triggerAutoSync();
   },
 
   // Pipeline Bonus XP: Menghitung total XP dari milestone yang selesai

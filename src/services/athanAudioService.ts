@@ -1,46 +1,59 @@
 import { Platform } from 'react-native';
+import { soundHaptics } from './soundHaptics';
 
-export type AthanToneType = 'makkah' | 'madinah' | 'takbir' | 'chime';
+export type AthanToneType = 'makkah' | 'madinah' | 'fajr' | 'mishary' | 'chime';
 
 export interface AthanOption {
   id: AthanToneType;
   title: string;
   description: string;
   durationSec: number;
+  audioUrl?: string;
 }
 
 export const ATHAN_OPTIONS: AthanOption[] = [
   {
     id: 'makkah',
-    title: 'Adzan Makkah Al-Mukarramah',
-    description: 'Melodi agung dan syahdu, lantang menggetarkan kalbu.',
-    durationSec: 12,
+    title: 'Adzan Asli Makkah (Masjidil Haram)',
+    description: 'Rekaman suara asli adzan Masjidil Haram Makkah Al-Mukarramah yang agung dan menggetarkan kalbu.',
+    durationSec: 180,
+    audioUrl: 'https://www.islamcan.com/audio/adhan/azan1.mp3',
   },
   {
     id: 'madinah',
-    title: 'Adzan Madinah Al-Munawwarah',
-    description: 'Melodi lembut dan tenang, menyejukkan hati pendengar.',
-    durationSec: 10,
+    title: 'Adzan Asli Madinah (Masjid Nabawi)',
+    description: 'Rekaman suara asli adzan Masjid Nabawi Madinah Al-Munawwarah yang lembut, tenang, dan syahdu.',
+    durationSec: 160,
+    audioUrl: 'https://www.islamcan.com/audio/adhan/azan2.mp3',
   },
   {
-    id: 'takbir',
-    title: 'Takbir & Panggilan Sholat Singkat',
-    description: 'Dua kali lafadz takbir, cocok untuk suasana kantor/kerja.',
-    durationSec: 6,
+    id: 'fajr',
+    title: 'Adzan Asli Subuh (Ash-Shalatu Khair)',
+    description: 'Rekaman suara asli khusus sholat Subuh dengan lafadz "Ash-Shalatu khairun minan-naum".',
+    durationSec: 210,
+    audioUrl: 'https://www.islamcan.com/audio/adhan/azan8.mp3',
+  },
+  {
+    id: 'mishary',
+    title: 'Adzan Asli Syaikh Mishary Rashid',
+    description: 'Lantunan suara asli merdu dan fasih dari Qari dunia Syaikh Mishary Rashid Alafasy.',
+    durationSec: 200,
+    audioUrl: 'https://www.islamcan.com/audio/adhan/azan3.mp3',
   },
   {
     id: 'chime',
     title: 'Nada Lembut & Gemerincing Wudhu',
-    description: 'Chime kristal halus untuk mode senyap profesional.',
-    durationSec: 4,
+    description: 'Chime kristal halus sintetis untuk pengingat adzan dalam mode kerja profesional.',
+    durationSec: 5,
   },
 ];
 
 class AthanAudioService {
+  private audioElement: HTMLAudioElement | null = null;
   private audioCtx: any = null;
   private isPlaying: boolean = false;
-  private activeNodes: any[] = [];
-  private volume: number = 0.8;
+  private activeToneId: AthanToneType | null = null;
+  private volume: number = 0.85;
 
   private getAudioContext() {
     if (Platform.OS === 'web' && typeof window !== 'undefined') {
@@ -54,94 +67,104 @@ class AthanAudioService {
 
   setVolume(vol: number) {
     this.volume = Math.max(0, Math.min(1, vol));
+    if (this.audioElement) {
+      this.audioElement.volume = this.volume;
+    }
   }
 
   stopAll() {
-    this.activeNodes.forEach((node) => {
+    if (this.audioElement) {
       try {
-        node.stop();
-        node.disconnect();
-      } catch {}
-    });
-    this.activeNodes = [];
+        this.audioElement.pause();
+        this.audioElement.currentTime = 0;
+        this.audioElement.src = '';
+      } catch {
+        // ignore
+      }
+      this.audioElement = null;
+    }
     this.isPlaying = false;
+    this.activeToneId = null;
   }
 
   /**
-   * Synthesizes authentic melodic Adzan phrasing
+   * Plays authentic recorded Adzan MP3 or synthesized chime
    */
   playAthanTone(toneType: AthanToneType = 'makkah', onComplete?: () => void) {
+    if (soundHaptics.getIsMuted()) {
+      return;
+    }
+
+    this.stopAll();
+    this.isPlaying = true;
+    this.activeToneId = toneType;
+
+    const option = ATHAN_OPTIONS.find((o) => o.id === toneType) || ATHAN_OPTIONS[0];
+
+    // If Chime synthetic mode
+    if (toneType === 'chime' || !option.audioUrl) {
+      this.playSyntheticChime(onComplete);
+      return;
+    }
+
+    // Play Authentic MP3 Audio
+    if (Platform.OS === 'web' && typeof Audio !== 'undefined') {
+      try {
+        const audio = new Audio(option.audioUrl);
+        audio.volume = this.volume;
+        this.audioElement = audio;
+
+        audio.onended = () => {
+          this.isPlaying = false;
+          this.activeToneId = null;
+          if (onComplete) onComplete();
+        };
+
+        audio.onerror = () => {
+          // If network error, fallback to synthetic chime
+          this.playSyntheticChime(onComplete);
+        };
+
+        const playPromise = audio.play();
+        if (playPromise !== undefined) {
+          playPromise.catch(() => {
+            // Autoplay policy fallback
+            this.playSyntheticChime(onComplete);
+          });
+        }
+      } catch {
+        this.playSyntheticChime(onComplete);
+      }
+    } else {
+      this.playSyntheticChime(onComplete);
+    }
+  }
+
+  private playSyntheticChime(onComplete?: () => void) {
     try {
       const ctx = this.getAudioContext();
-      if (!ctx) return;
+      if (!ctx) {
+        this.isPlaying = false;
+        if (onComplete) onComplete();
+        return;
+      }
+
       if (ctx.state === 'suspended') {
         ctx.resume();
       }
 
-      this.stopAll();
-      this.isPlaying = true;
-
       const now = ctx.currentTime;
-
-      // Define note sequences (Frequencies in Hz)
-      let notes: { freq: number; dur: number; delay: number }[] = [];
-
-      if (toneType === 'makkah') {
-        // Melodic Rast motif for Allahu Akbar
-        notes = [
-          { freq: 261.63, dur: 0.8, delay: 0.0 }, // C4 (Al-)
-          { freq: 329.63, dur: 1.2, delay: 0.7 }, // E4 (-laa-)
-          { freq: 392.00, dur: 1.6, delay: 1.8 }, // G4 (-hu)
-          { freq: 349.23, dur: 0.9, delay: 3.3 }, // F4 (Ak-)
-          { freq: 329.63, dur: 2.2, delay: 4.1 }, // E4 (-bar)
-          // Second takbir
-          { freq: 261.63, dur: 0.8, delay: 6.5 },
-          { freq: 329.63, dur: 1.2, delay: 7.2 },
-          { freq: 392.00, dur: 1.6, delay: 8.3 },
-          { freq: 349.23, dur: 0.9, delay: 9.8 },
-          { freq: 261.63, dur: 2.5, delay: 10.6 },
-        ];
-      } else if (toneType === 'madinah') {
-        // Softer Bayati mode
-        notes = [
-          { freq: 293.66, dur: 0.9, delay: 0.0 }, // D4
-          { freq: 329.63, dur: 1.1, delay: 0.8 }, // E4
-          { freq: 349.23, dur: 1.4, delay: 1.8 }, // F4
-          { freq: 329.63, dur: 0.8, delay: 3.1 }, // E4
-          { freq: 293.66, dur: 2.0, delay: 3.8 }, // D4
-          // Second line
-          { freq: 293.66, dur: 0.9, delay: 6.0 },
-          { freq: 349.23, dur: 1.3, delay: 6.8 },
-          { freq: 329.63, dur: 1.0, delay: 8.0 },
-          { freq: 293.66, dur: 2.4, delay: 8.9 },
-        ];
-      } else if (toneType === 'takbir') {
-        notes = [
-          { freq: 329.63, dur: 0.7, delay: 0.0 }, // E4
-          { freq: 392.00, dur: 1.2, delay: 0.6 }, // G4
-          { freq: 349.23, dur: 0.8, delay: 1.7 }, // F4
-          { freq: 329.63, dur: 1.8, delay: 2.4 }, // E4
-          // Second takbir
-          { freq: 329.63, dur: 0.7, delay: 4.4 },
-          { freq: 392.00, dur: 1.2, delay: 5.0 },
-          { freq: 329.63, dur: 2.0, delay: 6.1 },
-        ];
-      } else {
-        // Chime for H-15 buffer
-        notes = [
-          { freq: 523.25, dur: 0.8, delay: 0.0 }, // C5
-          { freq: 659.25, dur: 0.9, delay: 0.4 }, // E5
-          { freq: 783.99, dur: 1.0, delay: 0.8 }, // G5
-          { freq: 1046.50, dur: 1.8, delay: 1.3 }, // C6
-        ];
-      }
+      const notes = [
+        { freq: 523.25, dur: 0.8, delay: 0.0 }, // C5
+        { freq: 659.25, dur: 0.9, delay: 0.4 }, // E5
+        { freq: 783.99, dur: 1.0, delay: 0.8 }, // G5
+        { freq: 1046.5, dur: 1.8, delay: 1.3 }, // C6
+      ];
 
       notes.forEach((note) => {
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
-
-        // Warm harmonic tone
-        osc.type = toneType === 'chime' ? 'sine' : 'triangle';
+        osc.type = 'sine';
         osc.frequency.setValueAtTime(note.freq, now + note.delay);
 
         const startTime = now + note.delay;
@@ -153,19 +176,19 @@ class AthanAudioService {
 
         osc.connect(gain);
         gain.connect(ctx.destination);
-
         osc.start(startTime);
         osc.stop(endTime);
-        this.activeNodes.push(osc);
       });
 
-      const totalDurationMs = (notes[notes.length - 1].delay + notes[notes.length - 1].dur) * 1000;
+      const totalMs = (notes[notes.length - 1].delay + notes[notes.length - 1].dur) * 1000;
       setTimeout(() => {
         this.isPlaying = false;
+        this.activeToneId = null;
         if (onComplete) onComplete();
-      }, totalDurationMs);
+      }, totalMs);
     } catch {
-      // Audio autoplay fail-safe
+      this.isPlaying = false;
+      if (onComplete) onComplete();
     }
   }
 
@@ -173,6 +196,7 @@ class AthanAudioService {
    * Spoken Indonesian voice reminder for H-15 prayer buffer
    */
   speakBufferReminder(prayerName: string = 'Sholat', minutesRemaining: number = 15) {
+    if (soundHaptics.getIsMuted()) return;
     if (Platform.OS === 'web' && typeof window !== 'undefined' && 'speechSynthesis' in window) {
       try {
         window.speechSynthesis.cancel();
@@ -186,8 +210,12 @@ class AthanAudioService {
     }
   }
 
-  getIsPlaying() {
+  getIsPlaying(): boolean {
     return this.isPlaying;
+  }
+
+  getActiveToneId(): AthanToneType | null {
+    return this.activeToneId;
   }
 }
 

@@ -6,10 +6,11 @@ interface AuthState {
   user: UserProfile;
   isAuthenticated: boolean;
   isLoading: boolean;
-  
+
   // Actions
   loginDemo: () => Promise<void>;
-  loginWithGoogle: (profile: Partial<UserProfile>) => Promise<void>;
+  loginWithEmail: (email: string, displayName?: string) => Promise<void>;
+  loginWithWhatsApp: (phone: string, displayName?: string) => Promise<void>;
   updateProfile: (profile: Partial<UserProfile>) => Promise<void>;
   logout: () => Promise<void>;
   toggleCalendarSync: () => Promise<void>;
@@ -18,43 +19,42 @@ interface AuthState {
 
 const STORAGE_AUTH_KEY = '@zahim_auth_v2';
 
-// Matching user's screenshot: "Ahmad Ali", Muslim scholar with peci avatar
 const DEFAULT_USER: UserProfile = {
   uid: 'zahim_user_001',
   email: 'ahmad.ali@zahim.id',
+  phone: '081234567890',
   displayName: 'Ahmad Ali',
-  photoURL: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80',
+  photoURL: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&auto=format&fit=crop&q=80',
   calendarSyncEnabled: true,
   location: {
     city: 'DKI Jakarta',
     latitude: -6.2088,
-    longitude: 106.8456
-  }
+    longitude: 106.8456,
+  },
 };
 
 export const useAuthStore = create<AuthState>((set, get) => ({
   user: DEFAULT_USER,
-  isAuthenticated: true,
-  isLoading: false,
+  isAuthenticated: false,
+  isLoading: true,
 
   loadStoredAuth: async () => {
     try {
       const stored = await AsyncStorage.getItem(STORAGE_AUTH_KEY);
       if (stored) {
-        set({ user: JSON.parse(stored), isAuthenticated: true });
+        set({ user: JSON.parse(stored), isAuthenticated: true, isLoading: false });
       } else {
-        set({ user: DEFAULT_USER, isAuthenticated: true });
-        await AsyncStorage.setItem(STORAGE_AUTH_KEY, JSON.stringify(DEFAULT_USER));
+        set({ isAuthenticated: false, isLoading: false });
       }
     } catch {
-      // Fallback
+      set({ isAuthenticated: false, isLoading: false });
     }
   },
 
   updateProfile: async (updatedData) => {
     const updated = {
       ...get().user,
-      ...updatedData
+      ...updatedData,
     };
     set({ user: updated });
     await AsyncStorage.setItem(STORAGE_AUTH_KEY, JSON.stringify(updated));
@@ -62,23 +62,47 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
   loginDemo: async () => {
     set({ isLoading: true });
-    await new Promise((r) => setTimeout(r, 400));
+    await new Promise((r) => setTimeout(r, 300));
     set({ user: DEFAULT_USER, isAuthenticated: true, isLoading: false });
     await AsyncStorage.setItem(STORAGE_AUTH_KEY, JSON.stringify(DEFAULT_USER));
   },
 
-  loginWithGoogle: async (profile) => {
-    const fullUser: UserProfile = {
+  loginWithEmail: async (email: string, displayName?: string) => {
+    set({ isLoading: true });
+    const cleanEmail = email.trim().toLowerCase();
+    const cleanName = displayName?.trim() || cleanEmail.split('@')[0] || 'Hamba Allah';
+    const newUser: UserProfile = {
       ...get().user,
-      ...profile,
-      uid: profile.uid || `google_${Date.now()}`
+      uid: `email_${Date.now()}`,
+      email: cleanEmail,
+      displayName: cleanName,
     };
-    set({ user: fullUser, isAuthenticated: true });
-    await AsyncStorage.setItem(STORAGE_AUTH_KEY, JSON.stringify(fullUser));
+    set({ user: newUser, isAuthenticated: true, isLoading: false });
+    await AsyncStorage.setItem(STORAGE_AUTH_KEY, JSON.stringify(newUser));
+  },
+
+  loginWithWhatsApp: async (phone: string, displayName?: string) => {
+    set({ isLoading: true });
+    const cleanPhone = phone.trim();
+    const cleanName = displayName?.trim() || 'Sahabat ZAHIM';
+    const newUser: UserProfile = {
+      ...get().user,
+      uid: `wa_${Date.now()}`,
+      email: `${cleanPhone.replace(/\D/g, '')}@wa.zahim.id`,
+      phone: cleanPhone,
+      displayName: cleanName,
+    };
+    set({ user: newUser, isAuthenticated: true, isLoading: false });
+    await AsyncStorage.setItem(STORAGE_AUTH_KEY, JSON.stringify(newUser));
   },
 
   logout: async () => {
-    set({ user: DEFAULT_USER, isAuthenticated: true });
+    try {
+      await AsyncStorage.removeItem(STORAGE_AUTH_KEY);
+    } catch {
+      // ignore
+    }
+    set({ isAuthenticated: false, user: DEFAULT_USER });
   },
 
   toggleCalendarSync: async () => {
@@ -87,5 +111,5 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     const updated = { ...user, calendarSyncEnabled: !user.calendarSyncEnabled };
     set({ user: updated });
     await AsyncStorage.setItem(STORAGE_AUTH_KEY, JSON.stringify(updated));
-  }
+  },
 }));

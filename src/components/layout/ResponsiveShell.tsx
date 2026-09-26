@@ -10,6 +10,7 @@ interface ResponsiveShellProps {
   onSelectTab: (tab: TabType) => void;
   onOpenCalendarSync: () => void;
   onOpenDhikr: () => void;
+  onOpenSettings?: () => void;
   children: (isDesktop: boolean) => React.ReactNode;
 }
 
@@ -18,6 +19,7 @@ export const ResponsiveShell: React.FC<ResponsiveShellProps> = ({
   onSelectTab,
   onOpenCalendarSync,
   onOpenDhikr,
+  onOpenSettings,
   children,
 }) => {
   const { width } = useWindowDimensions();
@@ -32,6 +34,7 @@ export const ResponsiveShell: React.FC<ResponsiveShellProps> = ({
       <TopNav
         onOpenCalendarSync={onOpenCalendarSync}
         onOpenDhikr={onOpenDhikr}
+        onOpenSettings={onOpenSettings}
         isMobileSimulator={isMobileSimulator}
         onToggleSimulator={() => setIsMobileSimulator(!isMobileSimulator)}
         isLargeScreen={isLargeScreen}

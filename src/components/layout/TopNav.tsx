@@ -1,13 +1,14 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import { Colors } from '../../theme/colors';
 import { useAuthStore } from '../../store/useAuthStore';
 import { soundHaptics } from '../../services/soundHaptics';
-import { Calendar, Moon, Smartphone, Monitor } from 'lucide-react-native';
+import { Calendar, Moon, Smartphone, Monitor, Volume2, VolumeX } from 'lucide-react-native';
 
 interface TopNavProps {
   onOpenCalendarSync: () => void;
   onOpenDhikr: () => void;
+  onOpenSettings?: () => void;
   isMobileSimulator: boolean;
   onToggleSimulator: () => void;
   isLargeScreen: boolean;
@@ -16,11 +17,20 @@ interface TopNavProps {
 export const TopNav: React.FC<TopNavProps> = ({
   onOpenCalendarSync,
   onOpenDhikr,
+  onOpenSettings,
   isMobileSimulator,
   onToggleSimulator,
   isLargeScreen,
 }) => {
   const { user } = useAuthStore();
+  const [isMuted, setIsMuted] = useState(soundHaptics.getIsMuted());
+
+  useEffect(() => {
+    const unsubscribe = soundHaptics.addListener((muted) => setIsMuted(muted));
+    return () => {
+      unsubscribe();
+    };
+  }, []);
 
   return (
     <View style={[styles.container, !isLargeScreen && styles.containerMobile]}>
@@ -75,6 +85,29 @@ export const TopNav: React.FC<TopNavProps> = ({
           </TouchableOpacity>
         )}
 
+        {/* Global Sound Mute / Unmute Button */}
+        <TouchableOpacity
+          activeOpacity={0.7}
+          onPress={() => soundHaptics.toggleMute()}
+          style={[
+            styles.actionBtn,
+            !isLargeScreen && styles.actionBtnCompact,
+            isMuted && styles.actionBtnMuted,
+          ]}
+          accessibilityLabel={isMuted ? 'Nyalakan Suara' : 'Matikan Suara (Mode Senyap)'}
+        >
+          {!isMuted ? (
+            <Volume2 size={15} color="#00FF66" />
+          ) : (
+            <VolumeX size={15} color="#EF4444" />
+          )}
+          {isLargeScreen && (
+            <Text style={[styles.actionBtnText, isMuted && { color: '#EF4444' }]}>
+              {!isMuted ? 'Suara On' : 'Senyap'}
+            </Text>
+          )}
+        </TouchableOpacity>
+
         {/* Quick Dhikr Button */}
         <TouchableOpacity
           activeOpacity={0.7}
@@ -104,9 +137,19 @@ export const TopNav: React.FC<TopNavProps> = ({
         </TouchableOpacity>
 
         {/* User Avatar */}
-        <View style={[styles.userAvatar, !isLargeScreen && styles.userAvatarMobile]}>
-          <Text style={styles.avatarInitials}>HA</Text>
-        </View>
+        <TouchableOpacity
+          activeOpacity={0.8}
+          onPress={onOpenSettings}
+          style={[styles.userAvatar, !isLargeScreen && styles.userAvatarMobile]}
+        >
+          {user?.photoURL ? (
+            <Image source={{ uri: user.photoURL }} style={styles.avatarImgSmall} />
+          ) : (
+            <Text style={styles.avatarInitials}>
+              {user?.displayName ? user.displayName.substring(0, 2).toUpperCase() : 'HA'}
+            </Text>
+          )}
+        </TouchableOpacity>
       </View>
     </View>
   );
@@ -253,16 +296,27 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginLeft: 4,
+    overflow: 'hidden',
   },
   userAvatarMobile: {
     width: 28,
     height: 28,
     borderRadius: 14,
     marginLeft: 2,
+    overflow: 'hidden',
   },
   avatarInitials: {
     fontSize: 11,
     fontWeight: '700',
     color: Colors.secondary,
+  },
+  avatarImgSmall: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 16,
+  },
+  actionBtnMuted: {
+    borderColor: 'rgba(239, 68, 68, 0.4)',
+    backgroundColor: 'rgba(239, 68, 68, 0.12)',
   },
 });

@@ -24,6 +24,61 @@ export const INDONESIAN_CITIES: CityPreset[] = [
 ];
 
 export class PrayerService {
+  static async detectCurrentGPSLocation(): Promise<CityPreset> {
+    return new Promise((resolve, reject) => {
+      if (typeof navigator === 'undefined' || !navigator.geolocation) {
+        reject(new Error('Geolocation tidak didukung pada browser/perangkat ini.'));
+        return;
+      }
+
+      navigator.geolocation.getCurrentPosition(
+        async (position) => {
+          const lat = position.coords.latitude;
+          const lng = position.coords.longitude;
+
+          let locationName = 'Lokasi GPS Anda';
+          try {
+            const res = await fetch(
+              `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=10`,
+              { headers: { 'User-Agent': 'ZAHIM-Islamic-App' } }
+            );
+            if (res.ok) {
+              const data = await res.json();
+              locationName =
+                data.address?.city ||
+                data.address?.town ||
+                data.address?.county ||
+                data.address?.state ||
+                'Lokasi GPS Anda';
+            }
+          } catch {
+            let closest = INDONESIAN_CITIES[0];
+            let minDist = Infinity;
+            INDONESIAN_CITIES.forEach((c) => {
+              const d = Math.hypot(c.latitude - lat, c.longitude - lng);
+              if (d < minDist) {
+                minDist = d;
+                closest = c;
+              }
+            });
+            locationName = `${closest.name} (Sekitar)`;
+          }
+
+          resolve({
+            name: locationName,
+            latitude: lat,
+            longitude: lng,
+            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'Asia/Jakarta',
+          });
+        },
+        (error) => {
+          reject(error);
+        },
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
+      );
+    });
+  }
+
   static getCalculationParameters() {
     // Singapore method closely aligns with Kemenag RI (Fajr: 20°, Isha: 18°)
     const params = CalculationMethod.Singapore();

@@ -3,6 +3,7 @@ import {
   StyleSheet,
   Text,
   View,
+  ActivityIndicator,
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { Colors } from './src/theme/colors';
@@ -26,6 +27,7 @@ import { PrayerTimesList } from './src/components/prayer/PrayerTimesList';
 import { QuranProgressCard } from './src/components/quran/QuranProgressCard';
 import { SmartMemoCard } from './src/components/memo/SmartMemoCard';
 import { ResponsiveShell } from './src/components/layout/ResponsiveShell';
+import { LoginScreen } from './src/components/auth/LoginScreen';
 
 // Profile & Metrics Components (Matching user reference)
 import { ProfileHeader } from './src/components/profile/ProfileHeader';
@@ -105,7 +107,7 @@ export default function App() {
     loadStoredData: loadMemoData,
   } = useMemoStore();
 
-  const { loadStoredAuth } = useAuthStore();
+  const { isAuthenticated, isLoading, loadStoredAuth } = useAuthStore();
   const { loadStoredData: loadZakatData } = useZakatSedekahStore();
 
   useEffect(() => {
@@ -128,6 +130,27 @@ export default function App() {
     'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember',
   ];
 
+  // 1. Splash loading state
+  if (isLoading) {
+    return (
+      <View style={[styles.container, styles.loadingCenter]}>
+        <StatusBar style="light" />
+        <ActivityIndicator size="large" color={Colors.primary} />
+        <Text style={styles.loadingText}>Memuat Zad Al-Himmah...</Text>
+      </View>
+    );
+  }
+
+  // 2. Auth Gate: Pengguna WAJIB login via Google/Gmail atau WhatsApp sebelum mentrack kebiasaan
+  if (!isAuthenticated) {
+    return (
+      <View style={styles.container}>
+        <StatusBar style="light" />
+        <LoginScreen />
+      </View>
+    );
+  }
+
   return (
     <View style={styles.container}>
       <StatusBar style="light" />
@@ -137,6 +160,7 @@ export default function App() {
         onSelectTab={setActiveTab}
         onOpenCalendarSync={() => setIsCalendarSyncOpen(true)}
         onOpenDhikr={() => setIsDhikrOpen(true)}
+        onOpenSettings={() => setIsEditProfileOpen(true)}
       >
         {(isDesktop) => {
           if (isDesktop) {
@@ -584,6 +608,17 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: Colors.bgBase,
+  },
+  loadingCenter: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    color: Colors.textSecondary,
+    marginTop: 14,
+    fontSize: 13,
+    fontWeight: '600',
+    letterSpacing: 0.5,
   },
   desktopLayout: {
     gap: 20,

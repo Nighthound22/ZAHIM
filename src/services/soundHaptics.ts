@@ -1,10 +1,66 @@
 import * as Haptics from 'expo-haptics';
 import { Platform } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+const STORAGE_SOUND_MUTE_KEY = '@zahim_sound_mute_v1';
 
 class SoundHapticsService {
   private audioCtx: any = null;
+  private isMuted: boolean = false;
+  private listeners: Set<(muted: boolean) => void> = new Set();
+
+  constructor() {
+    this.loadSettings();
+  }
+
+  async loadSettings() {
+    try {
+      const stored = await AsyncStorage.getItem(STORAGE_SOUND_MUTE_KEY);
+      if (stored !== null) {
+        this.isMuted = JSON.parse(stored);
+        this.notifyListeners();
+      }
+    } catch {
+      // Fallback
+    }
+  }
+
+  getIsMuted(): boolean {
+    return this.isMuted;
+  }
+
+  async setMuted(muted: boolean) {
+    this.isMuted = muted;
+    this.notifyListeners();
+    try {
+      await AsyncStorage.setItem(STORAGE_SOUND_MUTE_KEY, JSON.stringify(muted));
+    } catch {
+      // Fallback
+    }
+  }
+
+  async toggleMute(): Promise<boolean> {
+    const next = !this.isMuted;
+    await this.setMuted(next);
+    if (!next) {
+      this.playTickSound();
+    }
+    return next;
+  }
+
+  addListener(listener: (muted: boolean) => void) {
+    this.listeners.add(listener);
+    return () => {
+      this.listeners.delete(listener);
+    };
+  }
+
+  private notifyListeners() {
+    this.listeners.forEach((fn) => fn(this.isMuted));
+  }
 
   private getAudioContext() {
+    if (this.isMuted) return null;
     if (Platform.OS === 'web' && typeof window !== 'undefined') {
       const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
       if (AudioCtx && !this.audioCtx) {
@@ -16,6 +72,7 @@ class SoundHapticsService {
 
   // Soft click sound for dhikr counter or button taps
   playTickSound() {
+    if (this.isMuted) return;
     try {
       const ctx = this.getAudioContext();
       if (ctx) {
@@ -43,6 +100,7 @@ class SoundHapticsService {
 
   // Celebration chime when finishing a target / habit
   playSuccessChime() {
+    if (this.isMuted) return;
     try {
       const ctx = this.getAudioContext();
       if (ctx) {

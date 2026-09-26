@@ -5,11 +5,13 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
+  Linking,
 } from 'react-native';
 import Svg, { Circle, Line, Text as SvgText, G, Path, Polygon } from 'react-native-svg';
 import { Colors } from '../../theme/colors';
 import { usePrayerStore } from '../../store/usePrayerStore';
 import { QiblaService, QiblaResult } from '../../services/qiblaService';
+import { PrayerService } from '../../services/prayerService';
 import { soundHaptics } from '../../services/soundHaptics';
 import { X, Compass, MapPin, CheckCircle, Navigation } from 'lucide-react-native';
 
@@ -29,6 +31,31 @@ export const QiblaCompassModal: React.FC<QiblaCompassModalProps> = ({
     QiblaService.calculateQibla(selectedCity.latitude, selectedCity.longitude, selectedCity.name)
   );
   const [deviceHeading, setDeviceHeading] = useState(0); // 0 = North
+  const [isDetecting, setIsDetecting] = useState(false);
+
+  const handleOpenGoogleMaps = () => {
+    soundHaptics.lightTap();
+    const url = `https://www.google.com/maps/dir/?api=1&origin=${selectedCity.latitude},${selectedCity.longitude}&destination=21.422487,39.826206`;
+    if (typeof window !== 'undefined' && window.open) {
+      window.open(url, '_blank');
+    } else {
+      Linking.openURL(url).catch(() => {});
+    }
+  };
+
+  const handleSyncGPS = async () => {
+    soundHaptics.lightTap();
+    setIsDetecting(true);
+    try {
+      const loc = await PrayerService.detectCurrentGPSLocation();
+      soundHaptics.celebrate();
+      usePrayerStore.getState().setCity(loc);
+    } catch {
+      soundHaptics.warning();
+    } finally {
+      setIsDetecting(false);
+    }
+  };
 
   useEffect(() => {
     const qibla = QiblaService.calculateQibla(
@@ -243,6 +270,30 @@ export const QiblaCompassModal: React.FC<QiblaCompassModalProps> = ({
               <Text style={styles.metricSub}>Makkah Al-Mukarramah</Text>
             </View>
           </View>
+
+          {/* Action Buttons: GPS Sync & Google Maps Navigation */}
+          <View style={styles.actionRow}>
+            <TouchableOpacity
+              activeOpacity={0.8}
+              onPress={handleSyncGPS}
+              disabled={isDetecting}
+              style={styles.gpsSyncBtn}
+            >
+              <MapPin size={14} color="#00FF66" />
+              <Text style={styles.gpsSyncText}>
+                {isDetecting ? 'Mencari GPS...' : 'Sinkron GPS'}
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              activeOpacity={0.8}
+              onPress={handleOpenGoogleMaps}
+              style={styles.googleMapsBtn}
+            >
+              <Navigation size={14} color="#0B0D11" strokeWidth={2.5} />
+              <Text style={styles.googleMapsText}>Buka di Google Maps</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </View>
     </Modal>
@@ -380,5 +431,46 @@ const styles = StyleSheet.create({
   metricSub: {
     fontSize: 10,
     color: '#94A3B8',
+  },
+  actionRow: {
+    flexDirection: 'row',
+    gap: 10,
+    marginTop: 14,
+    width: '100%',
+  },
+  gpsSyncBtn: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    backgroundColor: '#11141C',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(0, 255, 102, 0.4)',
+    paddingVertical: 10,
+  },
+  gpsSyncText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#00FF66',
+  },
+  googleMapsBtn: {
+    flex: 1.2,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    backgroundColor: '#00FF66',
+    borderRadius: 12,
+    paddingVertical: 10,
+    shadowColor: '#00FF66',
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+  },
+  googleMapsText: {
+    fontSize: 12,
+    fontWeight: '800',
+    color: '#0B0D11',
   },
 });

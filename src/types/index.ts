@@ -2,6 +2,7 @@
 export interface UserProfile {
   uid: string;
   email: string;
+  phone?: string;
   displayName: string;
   photoURL?: string;
   googleRefreshToken?: string;

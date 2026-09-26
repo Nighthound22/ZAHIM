@@ -231,9 +231,10 @@ export const InstallAppModal: React.FC<InstallAppModalProps> = ({ visible, onClo
                     <Text style={styles.stepNumberText}>2</Text>
                   </View>
                   <View style={styles.stepTextCol}>
-                    <Text style={styles.stepTitle}>Klik Ikon Install di Address Bar</Text>
+                    <Text style={styles.stepTitle}>Klik Ikon Install di Address Bar atau Menu Browser</Text>
                     <Text style={styles.stepDesc}>
-                      Di sebelah kanan address bar browser (dekat tombol bookmark bintang), klik ikon komputer/unduh <Text style={styles.boldText}>"Instal ZAHIM"</Text>.
+                      • <Text style={styles.boldText}>Cara 1:</Text> Di sebelah kanan address bar browser (dekat bintang), klik ikon komputer/unduh <Text style={styles.boldText}>"Instal ZAHIM"</Text>.{'\n'}
+                      • <Text style={styles.boldText}>Cara 2:</Text> Klik menu titik tiga (⋮) di pojok kanan atas browser &gt; pilih <Text style={styles.boldText}>"Simpan dan Bagikan"</Text> (atau langsung <Text style={styles.boldText}>"Instal ZAHIM..."</Text>) &gt; klik <Text style={styles.boldText}>Instal</Text>.
                     </Text>
                   </View>
                 </View>

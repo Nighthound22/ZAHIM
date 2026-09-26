@@ -64,7 +64,21 @@ class PWAInstallService {
       });
     }
 
-    // 3. Listen to beforeinstallprompt
+    // 3. Early captured prompt check & listener
+    const win = window as any;
+    if (win.__deferredPWAInstallPrompt) {
+      this.deferredPrompt = win.__deferredPWAInstallPrompt;
+    }
+    win.__onPWAInstallAvailable = (prompt: any) => {
+      this.deferredPrompt = prompt;
+      this.notify();
+    };
+    win.__onPWAAppInstalled = () => {
+      this.deferredPrompt = null;
+      this.isInstalled = true;
+      this.notify();
+    };
+
     window.addEventListener('beforeinstallprompt', (e) => {
       e.preventDefault();
       this.deferredPrompt = e;

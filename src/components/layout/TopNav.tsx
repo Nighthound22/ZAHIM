@@ -27,9 +27,11 @@ export const TopNav: React.FC<TopNavProps> = ({
       {/* Brand Identity */}
       <View style={styles.brandCol}>
         <View style={styles.logoRow}>
-          <View style={styles.logoIcon}>
-            <Text style={styles.logoIconText}>ز</Text>
-          </View>
+          <Image
+            source={require('../../../assets/logo.png')}
+            style={styles.logoImage}
+            resizeMode="cover"
+          />
           <View>
             <View style={styles.titleRow}>
               <Text style={styles.brandTitle}>ZAHIM</Text>
@@ -126,21 +128,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 10,
   },
-  logoIcon: {
-    width: 36,
-    height: 36,
+  logoImage: {
+    width: 38,
+    height: 38,
     borderRadius: 10,
-    backgroundColor: 'rgba(0, 255, 102, 0.15)',
     borderWidth: 1.5,
-    borderColor: Colors.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  logoIconText: {
-    fontSize: 20,
-    fontWeight: '900',
-    color: Colors.primary,
-    marginTop: -2,
+    borderColor: 'rgba(0, 255, 102, 0.4)',
   },
   titleRow: {
     flexDirection: 'row',

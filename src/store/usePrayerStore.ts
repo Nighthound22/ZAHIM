@@ -95,7 +95,15 @@ export const usePrayerStore = create<PrayerState>((set, get) => ({
     }
 
     if (get().isDNDActiveNow !== isDND) {
-      set({ isDNDActiveNow: isDND });
+      if (typeof queueMicrotask === 'function') {
+        queueMicrotask(() => {
+          set({ isDNDActiveNow: isDND });
+        });
+      } else {
+        setTimeout(() => {
+          set({ isDNDActiveNow: isDND });
+        }, 0);
+      }
     }
 
     return result;

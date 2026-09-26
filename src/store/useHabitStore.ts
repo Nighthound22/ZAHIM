@@ -102,14 +102,25 @@ const generateInitialSampleLogs = (): Record<string, HabitLog> => {
   return sampleLogs;
 };
 
+const STORAGE_FOCUS_KEY = '@zahim_focus_minutes_v1';
+
 export const useHabitStore = create<HabitState>((set, get) => ({
   habits: PRESET_HABITS,
   logs: generateInitialSampleLogs(),
   selectedDate: getTodayDateStr(),
   focusMinutesToday: 45,
 
-  addFocusMinutes: (minutes: number) => {
-    set({ focusMinutesToday: Math.max(0, get().focusMinutesToday + minutes) });
+  addFocusMinutes: async (minutes: number) => {
+    const updatedMinutes = Math.max(0, get().focusMinutesToday + minutes);
+    set({ focusMinutesToday: updatedMinutes });
+    try {
+      await AsyncStorage.setItem(
+        STORAGE_FOCUS_KEY,
+        JSON.stringify({ date: getTodayDateStr(), minutes: updatedMinutes })
+      );
+    } catch {
+      // ignore
+    }
   },
 
   setSelectedDate: (date) => set({ selectedDate: date }),
@@ -118,6 +129,7 @@ export const useHabitStore = create<HabitState>((set, get) => ({
     try {
       const storedHabits = await AsyncStorage.getItem(STORAGE_HABITS_KEY);
       const storedLogs = await AsyncStorage.getItem(STORAGE_LOGS_KEY);
+      const storedFocus = await AsyncStorage.getItem(STORAGE_FOCUS_KEY);
       
       let habits = PRESET_HABITS;
       let logs = generateInitialSampleLogs();
@@ -134,7 +146,21 @@ export const useHabitStore = create<HabitState>((set, get) => ({
         await AsyncStorage.setItem(STORAGE_LOGS_KEY, JSON.stringify(logs));
       }
 
-      set({ habits, logs });
+      let focusMinutesToday = 45;
+      if (storedFocus) {
+        try {
+          const parsedFocus = JSON.parse(storedFocus);
+          if (parsedFocus.date === getTodayDateStr() && typeof parsedFocus.minutes === 'number') {
+            focusMinutesToday = parsedFocus.minutes;
+          } else {
+            focusMinutesToday = 0;
+          }
+        } catch {
+          // ignore
+        }
+      }
+
+      set({ habits, logs, focusMinutesToday });
     } catch {
       // Fallback
     }

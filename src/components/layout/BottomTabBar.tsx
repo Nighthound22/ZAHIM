@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Platform } from 'react-native';
 import { Colors } from '../../theme/colors';
 import { TabType } from '../../types';
 import { LayoutDashboard, CheckSquare, Compass, BookOpen, FileText } from 'lucide-react-native';
@@ -60,7 +60,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#0B0D11',
     borderTopWidth: 1,
     borderTopColor: Colors.border,
-    paddingVertical: 8,
+    paddingTop: 10,
+    paddingBottom: Platform.OS === 'web' ? 22 : 26,
     paddingHorizontal: 12,
     justifyContent: 'space-around',
     alignItems: 'center',

@@ -23,21 +23,23 @@ export const TopNav: React.FC<TopNavProps> = ({
   const { user } = useAuthStore();
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, !isLargeScreen && styles.containerMobile]}>
       {/* Brand Identity */}
       <View style={styles.brandCol}>
         <View style={styles.logoRow}>
           <Image
             source={require('../../../assets/logo.png')}
-            style={styles.logoImage}
+            style={isLargeScreen ? styles.logoImage : styles.logoImageMobile}
             resizeMode="cover"
           />
           <View>
             <View style={styles.titleRow}>
-              <Text style={styles.brandTitle}>ZAHIM</Text>
-              <Text style={styles.brandArabic}>زاد الهمة</Text>
+              <Text style={[styles.brandTitle, !isLargeScreen && styles.brandTitleMobile]}>ZAHIM</Text>
+              <Text style={[styles.brandArabic, !isLargeScreen && styles.brandArabicMobile]}>زاد الهمة</Text>
             </View>
-            <Text style={styles.tagline}>Elevate Your Daily Routine, Master Your Akhirah & Dunya</Text>
+            {isLargeScreen && (
+              <Text style={styles.tagline}>Elevate Your Daily Routine, Master Your Akhirah & Dunya</Text>
+            )}
           </View>
         </View>
       </View>
@@ -80,10 +82,11 @@ export const TopNav: React.FC<TopNavProps> = ({
             soundHaptics.lightTap();
             onOpenDhikr();
           }}
-          style={styles.actionBtn}
+          style={[styles.actionBtn, !isLargeScreen && styles.actionBtnCompact]}
+          accessibilityLabel="Dzikir"
         >
           <Moon size={15} color={Colors.primary} />
-          <Text style={styles.actionBtnText}>Dzikir</Text>
+          {isLargeScreen && <Text style={styles.actionBtnText}>Dzikir</Text>}
         </TouchableOpacity>
 
         {/* Calendar Sync Button */}
@@ -93,14 +96,15 @@ export const TopNav: React.FC<TopNavProps> = ({
             soundHaptics.lightTap();
             onOpenCalendarSync();
           }}
-          style={styles.calendarBtn}
+          style={[styles.calendarBtn, !isLargeScreen && styles.calendarBtnCompact]}
+          accessibilityLabel="Sync Kalender"
         >
           <Calendar size={15} color="#0B0D11" />
-          <Text style={styles.calendarBtnText}>Sync Kalender</Text>
+          {isLargeScreen && <Text style={styles.calendarBtnText}>Sync Kalender</Text>}
         </TouchableOpacity>
 
         {/* User Avatar */}
-        <View style={styles.userAvatar}>
+        <View style={[styles.userAvatar, !isLargeScreen && styles.userAvatarMobile]}>
           <Text style={styles.avatarInitials}>HA</Text>
         </View>
       </View>
@@ -120,6 +124,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     zIndex: 10,
   },
+  containerMobile: {
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+  },
   brandCol: {
     flex: 1,
   },
@@ -135,6 +143,13 @@ const styles = StyleSheet.create({
     borderWidth: 1.5,
     borderColor: 'rgba(0, 255, 102, 0.4)',
   },
+  logoImageMobile: {
+    width: 32,
+    height: 32,
+    borderRadius: 8,
+    borderWidth: 1.5,
+    borderColor: 'rgba(0, 255, 102, 0.4)',
+  },
   titleRow: {
     flexDirection: 'row',
     alignItems: 'baseline',
@@ -146,10 +161,17 @@ const styles = StyleSheet.create({
     color: Colors.textPrimary,
     letterSpacing: 1.5,
   },
+  brandTitleMobile: {
+    fontSize: 16,
+    letterSpacing: 1,
+  },
   brandArabic: {
     fontSize: 15,
     fontWeight: '700',
     color: Colors.primary,
+  },
+  brandArabicMobile: {
+    fontSize: 13,
   },
   tagline: {
     fontSize: 10,
@@ -191,6 +213,10 @@ const styles = StyleSheet.create({
     paddingVertical: 7,
     borderRadius: 8,
   },
+  actionBtnCompact: {
+    paddingHorizontal: 9,
+    paddingVertical: 7,
+  },
   actionBtnText: {
     fontSize: 11,
     color: Colors.textPrimary,
@@ -208,6 +234,10 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 6,
   },
+  calendarBtnCompact: {
+    paddingHorizontal: 8,
+    paddingVertical: 7,
+  },
   calendarBtnText: {
     fontSize: 11,
     fontWeight: '800',
@@ -223,6 +253,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginLeft: 4,
+  },
+  userAvatarMobile: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    marginLeft: 2,
   },
   avatarInitials: {
     fontSize: 11,

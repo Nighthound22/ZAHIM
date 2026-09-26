@@ -61,10 +61,10 @@ export const MetricCardsGrid: React.FC<MetricCardsGridProps> = ({
         <View style={styles.bottomStatusRow}>
           <View style={[styles.statusPill, { backgroundColor: 'rgba(245, 158, 11, 0.15)' }]}>
             <Text style={[styles.statusPillText, { color: '#FBBF24' }]}>
-              {parseFloat(focusScore) < 5 ? 'Needs Focus' : 'Consistent'}
+              {parseFloat(focusScore) < 5 ? 'Perlu Fokus' : 'Konsisten'}
             </Text>
           </View>
-          <Text style={styles.subtextDim}>MVP Formula</Text>
+          <Text style={styles.subtextDim}>Rumus Indeks</Text>
         </View>
       </View>
 

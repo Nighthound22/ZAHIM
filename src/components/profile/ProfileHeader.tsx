@@ -94,78 +94,78 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({ onOpenSettings, on
               <Text style={styles.nameText}>{user?.displayName || 'Ahmad Ali'}!</Text>
             </View>
             <View style={styles.lightningWrap}>
-              <Zap size={22} color="#FBBF24" fill="#FBBF24" />
+              <Zap size={20} color="#FBBF24" fill="#FBBF24" />
             </View>
           </View>
 
           {/* Date & Live Clock Row */}
           <View style={styles.timeRow}>
-            <View style={styles.dateCol}>
-              <Text style={styles.dateText}>{dateStr || 'Kamis, 17 September 2026'}</Text>
-              <Text style={styles.hijriDateText}>☪ {hijriStr || "6 Rabi'ul Akhir 1448 H"}</Text>
-            </View>
+            <Text style={styles.dateText}>{dateStr || 'Kamis, 17 September 2026'}</Text>
             <View style={styles.liveClockWrap}>
               <View style={styles.cyanDot} />
               <Text style={styles.liveClockText}>{timeStr || '21.35.05 WIB'}</Text>
             </View>
           </View>
 
-          {/* Today Sunnah Fasting Pill if active */}
-          {isFastingToday && (
-            <View style={styles.fastingPill}>
-              <Text style={styles.fastingPillText}>🌙 {fastingTitleToday}</Text>
-            </View>
-          )}
+          {/* Hijri Date & Today Sunnah Fasting Pill */}
+          <View style={styles.hijriRow}>
+            <Text style={styles.hijriDateText}>☪ {hijriStr || "6 Rabi'ul Akhir 1448 H"}</Text>
+            {isFastingToday && (
+              <View style={styles.fastingPill}>
+                <Text style={styles.fastingPillText}>🌙 {fastingTitleToday}</Text>
+              </View>
+            )}
+          </View>
         </View>
       </View>
 
       {/* Action Buttons Row Below */}
       <View style={styles.actionButtonsRow}>
-        {/* Weather / Status Pill */}
-        <TouchableOpacity
-          activeOpacity={0.7}
-          onPress={() => soundHaptics.lightTap()}
-          style={styles.weatherBtn}
-        >
-          <Cloud size={16} color={Colors.textSecondary} />
+        {/* Cloud Status Pill */}
+        <View style={styles.weatherBtn}>
+          <Cloud size={14} color="#00FF66" />
+          <Text style={styles.statusText}>Cloud Active</Text>
           <View style={styles.weatherDot} />
-        </TouchableOpacity>
+        </View>
 
-        {/* Neon Database Cloud Sync Button */}
-        <TouchableOpacity
-          activeOpacity={0.7}
-          onPress={() => {
-            soundHaptics.lightTap();
-            onOpenNeonSync?.();
-          }}
-          style={[styles.actionBtn, { borderColor: 'rgba(0, 255, 102, 0.3)', backgroundColor: 'rgba(0, 255, 102, 0.08)' }]}
-        >
-          <Database size={16} color="#00FF66" />
-        </TouchableOpacity>
+        {/* Action Buttons Group */}
+        <View style={styles.actionButtonsGroup}>
+          {/* Neon Database Cloud Sync Button */}
+          <TouchableOpacity
+            activeOpacity={0.7}
+            onPress={() => {
+              soundHaptics.lightTap();
+              onOpenNeonSync?.();
+            }}
+            style={[styles.actionBtn, { borderColor: 'rgba(0, 255, 102, 0.3)', backgroundColor: 'rgba(0, 255, 102, 0.08)' }]}
+          >
+            <Database size={15} color="#00FF66" />
+          </TouchableOpacity>
 
-        {/* Settings / Edit Profile Button */}
-        <TouchableOpacity
-          activeOpacity={0.7}
-          onPress={() => {
-            soundHaptics.lightTap();
-            onOpenSettings();
-          }}
-          style={styles.actionBtn}
-        >
-          <Settings size={17} color={Colors.textSecondary} />
-        </TouchableOpacity>
+          {/* Settings / Edit Profile Button */}
+          <TouchableOpacity
+            activeOpacity={0.7}
+            onPress={() => {
+              soundHaptics.lightTap();
+              onOpenSettings();
+            }}
+            style={styles.actionBtn}
+          >
+            <Settings size={15} color={Colors.textSecondary} />
+          </TouchableOpacity>
 
-        {/* Logout / Switch Account Button */}
-        <TouchableOpacity
-          activeOpacity={0.7}
-          onPress={() => {
-            soundHaptics.lightTap();
-            onOpenSettings();
-          }}
-          style={styles.actionBtn}
-        >
-          <LogOut size={16} color="#F87171" />
-        </TouchableOpacity>
+          {/* Logout / Switch Account Button */}
+          <TouchableOpacity
+            activeOpacity={0.7}
+            onPress={() => {
+              soundHaptics.lightTap();
+              onOpenSettings();
+            }}
+            style={styles.actionBtn}
+          >
+            <LogOut size={15} color="#F87171" />
+          </TouchableOpacity>
+        </View>
       </View>
     </View>
   );
@@ -174,11 +174,11 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({ onOpenSettings, on
 const styles = StyleSheet.create({
   container: {
     backgroundColor: '#11141C',
-    borderRadius: 24,
+    borderRadius: 20,
     borderWidth: 1,
     borderColor: '#1F2432',
-    padding: 20,
-    marginBottom: 16,
+    padding: 16,
+    marginBottom: 14,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.35,
@@ -186,14 +186,14 @@ const styles = StyleSheet.create({
   },
   topInfoRow: {
     flexDirection: 'row',
-    alignItems: 'center',
-    gap: 16,
+    alignItems: 'flex-start',
+    gap: 14,
   },
   avatarContainer: {
     position: 'relative',
-    width: 68,
-    height: 68,
-    borderRadius: 20,
+    width: 60,
+    height: 60,
+    borderRadius: 18,
     borderWidth: 2,
     borderColor: 'rgba(56, 189, 248, 0.4)',
     overflow: 'visible',
@@ -201,7 +201,7 @@ const styles = StyleSheet.create({
   avatarImage: {
     width: '100%',
     height: '100%',
-    borderRadius: 18,
+    borderRadius: 16,
     backgroundColor: '#1E232E',
   },
   activeDot: {
@@ -221,39 +221,42 @@ const styles = StyleSheet.create({
   greetingRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'flex-start',
+    alignItems: 'center',
   },
   greetingText: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '800',
     color: Colors.textPrimary,
     letterSpacing: -0.2,
   },
   nameText: {
-    fontSize: 22,
+    fontSize: 20,
     fontWeight: '900',
     color: '#A78BFA', // Purple neon accent as in screenshot
     letterSpacing: -0.5,
     marginTop: 1,
   },
   lightningWrap: {
-    padding: 4,
+    padding: 2,
   },
   timeRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginTop: 8,
-    flexWrap: 'wrap',
+    marginTop: 6,
     gap: 6,
   },
-  dateCol: {
-    gap: 2,
-  },
   dateText: {
-    fontSize: 12,
+    fontSize: 11,
     color: '#94A3B8',
     fontWeight: '500',
+  },
+  hijriRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginTop: 5,
+    flexWrap: 'wrap',
   },
   hijriDateText: {
     fontSize: 11,
@@ -261,14 +264,12 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   fastingPill: {
-    alignSelf: 'flex-start',
     backgroundColor: 'rgba(0, 255, 102, 0.12)',
     borderWidth: 1,
     borderColor: 'rgba(0, 255, 102, 0.35)',
-    borderRadius: 8,
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    marginTop: 8,
+    borderRadius: 6,
+    paddingHorizontal: 7,
+    paddingVertical: 2,
   },
   fastingPillText: {
     fontSize: 10,
@@ -278,7 +279,7 @@ const styles = StyleSheet.create({
   liveClockWrap: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    gap: 5,
   },
   cyanDot: {
     width: 6,
@@ -290,7 +291,7 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
   },
   liveClockText: {
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: '700',
     color: '#38BDF8',
     fontFamily: 'monospace',
@@ -298,36 +299,46 @@ const styles = StyleSheet.create({
   },
   actionButtonsRow: {
     flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
-    gap: 10,
-    marginTop: 18,
-    paddingTop: 14,
+    marginTop: 14,
+    paddingTop: 12,
     borderTopWidth: 1,
     borderTopColor: 'rgba(255, 255, 255, 0.05)',
   },
   weatherBtn: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: 6,
     backgroundColor: '#171B26',
     borderWidth: 1,
     borderColor: '#242B3D',
-    borderRadius: 12,
-    paddingVertical: 8,
-    paddingHorizontal: 14,
+    borderRadius: 10,
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+  },
+  statusText: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: '#00FF66',
   },
   weatherDot: {
-    width: 7,
-    height: 7,
-    borderRadius: 4,
+    width: 6,
+    height: 6,
+    borderRadius: 3,
     backgroundColor: '#00FF66',
+  },
+  actionButtonsGroup: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
   },
   actionBtn: {
     backgroundColor: '#171B26',
     borderWidth: 1,
     borderColor: '#242B3D',
-    borderRadius: 12,
-    padding: 9,
+    borderRadius: 10,
+    padding: 8,
     alignItems: 'center',
     justifyContent: 'center',
   },

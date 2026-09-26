@@ -139,8 +139,8 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   mobileScrollContent: {
-    padding: 16,
-    paddingBottom: 32,
+    padding: 14,
+    paddingBottom: 48,
   },
   desktopContainer: {
     flex: 1,
